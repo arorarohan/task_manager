@@ -24,5 +24,6 @@ requested by: discord user 'dobesquiddy'
 - self.uncomplete_task(): select a completed task (based on index) and move it to its original location
 - self.change_priority(): select a task (based on index) and change its priority
 - self.clear_backlog(): clear "completed" (delete all info in the file) --> ask the user for confirmation first!
+- self.get_action(): ask a user what they want to do!
 
 ### helper functions
