@@ -1,11 +1,11 @@
 # task manager python application
-requested by: discord user 'dobesquiddy'
+yooooo
 
 ## features
 
 ### user interaction
 1. The user can create tasks, and assign them priority (important/not important)
-2. the user can move tasks to "completed" - these can be stored in a text file which the user can use a command to clear
+2. the user can move tasks to "completed" - these can be stored in a csv file which the user can use a command to clear
 3. the user can set a number of "completed" tasks to show: default can be 3?
 
 ### display
