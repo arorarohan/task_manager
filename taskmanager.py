@@ -83,10 +83,10 @@ class TaskManager:
                 print(" ".join(general_items[i]))
 
         #then the completed tasks (only as many as we intend to show)
-        print("\nYour completed tasks:")
+        print(f"\nYour completed tasks (first {self.completed_tasks_to_show}):")
+
         with open(self.completed_path,'r') as file:
             completed_items = list(csv.reader(file))
-            
             #we figure out how many items to show, the smallest of either the total number or the max number of items to show
             items_to_show = min(self.completed_tasks_to_show, len(completed_items))
             #we print out each item in the list, excluding the headers (hence we start at 1)
@@ -174,20 +174,38 @@ class TaskManager:
             print(f"added {task_name} to {file_to_open}!")
             
         
+    def move_task(self, index_to_move, source_file, dest_file):
+        #iterate through the source_file, if we find an item with index_to_move:
+                #we will copy it to the dest_file with a new index according to the number of items in the dest_file
+                #we will delete it from the original list if we succeed
+                #print a success message summarizing what happened and return True
+                #this is going to be a real pain in the ass to write.
+        #if we don't find anything, we will print an error message and return False
+        pass
 
     def complete_task(self):
         #this will be used for completing tasks
-            #ask the user for 
-        pass
-
+            #ask the user for the priority of the task they want to complete (this will be source_file)
+            #ask the user for the index of the task within the approrpiate list (index_to_move)
+            #set dest_file to self.completed_path
+            #use these arguments with self.move_task()
+            #while self.move_task() returns False, we will call self.complete_task() recursively
+        pass 
+        
     def uncomplete_task(self):
+        #similar method to self.complete_task(), this time we will move back to a list based on input from the user.
         pass
 
     def change_priority(self):
+        #this will have a similar approach as self.complete_task() but this time we move it to the other priority list
         pass
 
     def clear_backlog(self):
+        #literally all we have to do here is ask for confirmation, then either:
+            #access the completed file in write mode and write nothing (more elegant, idk if this works)
+            #delete the completed file entirely and make a new one (will definitely work)
         pass
 
     def change_number_of_tasks_to_show(self):
+        #ask for a new number, if n>0 we update self.completed_tasks_to_show to be the new number.
         pass
