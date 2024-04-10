@@ -55,10 +55,14 @@ class TaskManager:
         #let the user know we have finished setting up and are ready to go
         print("initialized successfully! \n")
 
-        #we will print the overview and get actions whenever we are not currently in an action.
+        #we will print the overview and get actions whenever we are not currently in an action. We also keep the files clear of whitespace.
         while True:
+            self.remove_whitespace(self.important_path)
+            self.remove_whitespace(self.general_path)
+            self.remove_whitespace(self.completed_path)
             self.overview()
             self.get_action()
+
 
     
     def overview(self):
@@ -273,3 +277,20 @@ class TaskManager:
     def change_number_of_tasks_to_show(self):
         #ask for a new number, if n>0 we update self.completed_tasks_to_show to be the new number.
         pass
+
+    def remove_whitespace(self, file_to_clean_up):
+        #get all the lines in the file
+        with open(file_to_clean_up,'r') as file:
+            lines = list(csv.reader(file))
+        
+        #create a new list of lines that doesn't have any of the whitespace
+        newlines = list()
+        for idx in range(len(lines)):
+            if lines[idx] != []:
+                newlines.append(lines[idx])
+
+        #rewrite the file using the new list
+        with open(file_to_clean_up,'w') as file:
+            writer = csv.writer(file)
+            for line in newlines:
+                writer.writerow(line)
