@@ -57,9 +57,9 @@ class TaskManager:
 
         #we will print the overview and get actions whenever we are not currently in an action. We also keep the files clear of whitespace.
         while True:
-            self.remove_whitespace(self.important_path)
-            self.remove_whitespace(self.general_path)
-            self.remove_whitespace(self.completed_path)
+            #self.remove_whitespace(self.important_path)
+            #self.remove_whitespace(self.general_path)
+            #self.remove_whitespace(self.completed_path)
             self.overview()
             self.get_action()
 
@@ -162,7 +162,7 @@ class TaskManager:
                 index_to_add = 1
             else: #in the case that there are already items, we need to find the max index
                 max_index = 0
-                #only include actual items in this search
+                #only include actual items in this search, in case we have whitespace (but we shouldn't anymore)
                 for item in items:
                     if len(item) == 0:
                         continue
@@ -172,7 +172,7 @@ class TaskManager:
                 index_to_add = max_index + 1
         
         #now we have found the index, we will add the items to the file
-        with open(file_to_open,'a') as file:
+        with open(file_to_open,'a',newline='') as file:
             writer = csv.writer(file)
             writer.writerow([str(index_to_add), task_name])
             print(f"added {task_name} to {file_to_open}!")
@@ -191,7 +191,7 @@ class TaskManager:
             #otherwise, we look for and capture the item with the index_to_move:
             item_to_move = ''
             for item in items:
-                #like before, ignore items that aren't valid entries
+                #like before, ignore items that aren't valid entries (although this should no longer be an issue)
                 if len(item) == 0:
                     print(f"{item} is blank, moving on...")
                     continue
@@ -214,7 +214,7 @@ class TaskManager:
                 index_to_add = 1
             else: #in the case that there are already items, we need to find the max index
                 max_index = 0
-                #only include actual items in this search
+                #only include actual items in this search, although this should not be a problem anymore
                 for item in items:
                     if len(item) == 0:
                         continue
@@ -224,7 +224,7 @@ class TaskManager:
                 index_to_add = max_index + 1
         
         #now we have found the index, we will add the items to the file
-        with open(dest_file,'a') as dest:
+        with open(dest_file,'a',newline='') as dest:
             writer = csv.writer(dest)
             writer.writerow([str(index_to_add), item_to_move])
             print(f"added {item_to_move} to {dest_file}!")
@@ -238,9 +238,10 @@ class TaskManager:
                 lines.append(row)
         
         #now overwrite the source file with every line except the one we are removing
-        with open(source_file,'w') as new_source:
+        with open(source_file,'w',newline='') as new_source:
             writer = csv.writer(new_source)
             for item in lines:
+                #ignore whitespace, although this should no longer be an issue
                 if len(item) == 0:
                     continue
                 elif item[0] != index_to_move:
@@ -277,20 +278,3 @@ class TaskManager:
     def change_number_of_tasks_to_show(self):
         #ask for a new number, if n>0 we update self.completed_tasks_to_show to be the new number.
         pass
-
-    def remove_whitespace(self, file_to_clean_up):
-        #get all the lines in the file
-        with open(file_to_clean_up,'r') as file:
-            lines = list(csv.reader(file))
-        
-        #create a new list of lines that doesn't have any of the whitespace
-        newlines = list()
-        for idx in range(len(lines)):
-            if lines[idx] != []:
-                newlines.append(lines[idx])
-
-        #rewrite the file using the new list
-        with open(file_to_clean_up,'w') as file:
-            writer = csv.writer(file)
-            for line in newlines:
-                writer.writerow(line)
