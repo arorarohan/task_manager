@@ -57,9 +57,6 @@ class TaskManager:
 
         #we will print the overview and get actions whenever we are not currently in an action. We also keep the files clear of whitespace.
         while True:
-            #self.remove_whitespace(self.important_path)
-            #self.remove_whitespace(self.general_path)
-            #self.remove_whitespace(self.completed_path)
             self.overview()
             self.get_action()
 
@@ -181,24 +178,21 @@ class TaskManager:
     def move_task(self, index_to_move, source_file, dest_file):
         #iterate through the source_file and look for the item that is associated with the index provided
         with open(source_file,'r') as source:
-            items = list(csv.reader(source))
-            print(items)
+            source_items = list(csv.reader(source))
+
             #error handling for if there are no items
-            if items == []:
-                print("the source file is empty, nothing to move!")
-                return False
+        if source_items == []:
+            print("the source file is empty, nothing to move!")
+            return False
             
             #otherwise, we look for and capture the item with the index_to_move:
-            item_to_move = ''
-            for item in items:
-                #like before, ignore items that aren't valid entries (although this should no longer be an issue)
-                if len(item) == 0:
-                    print(f"{item} is blank, moving on...")
-                    continue
-                #assign the actual item as item_to_move if we found it
-                elif int(item[0]) == index_to_move:
-                    print(f"found the item {item}, storing it...")
-                    item_to_move = item[1]
+        item_to_move = ''
+        for idx in range(len(source_items)):
+            if int(source_items[idx][0]) == index_to_move:
+                #we are also removing the item from the list so we can write the new one later!
+                item_to_move = source_items.pop(idx)
+                break
+
             
         #now suppose the item_to_move has not been found.
         if item_to_move == '':
@@ -208,47 +202,46 @@ class TaskManager:
         #if we've reached this point we have found the item that needs moving. Now we first have to find a place for it in the destination before dropping it in.
         #sounds familar, let's just recycle some existing code.
         with open(dest_file,'r') as dest:
-            items = list(csv.reader(dest))
+            dest_items = list(csv.reader(dest))
+
             #in the case that this is the first item
-            if items == []:
-                index_to_add = 1
-            else: #in the case that there are already items, we need to find the max index
-                max_index = 0
-                #only include actual items in this search, although this should not be a problem anymore
-                for item in items:
-                    if len(item) == 0:
-                        continue
-                    elif int(item[0]) > max_index:
-                        max_index = int(item[0])
-                #whatever the max index is, the index for the added item will be 1 more.
-                index_to_add = max_index + 1
+        if dest_items == []:
+            index_to_add = 1
+        else: #in the case that there are already items, we need to find the max index
+            max_index = 0
+            #only include actual items in this search, although this should not be a problem anymore
+            for item in dest_items:
+                if len(item) == 0:
+                    continue
+                elif int(item[0]) > max_index:
+                    max_index = int(item[0])
+            #whatever the max index is, the index for the added item will be 1 more.
+            index_to_add = max_index + 1
         
         #now we have found the index, we will add the items to the file
         with open(dest_file,'a',newline='') as dest:
             writer = csv.writer(dest)
-            writer.writerow([str(index_to_add), item_to_move])
-            print(f"added {item_to_move} to {dest_file}!")
+            writer.writerow([str(index_to_add), item_to_move[1]])
 
         #now that the item has been copied over, we need to delete the original (ugh)
-        #first copy each line of the source file
-        lines = []
-        with open(source_file,'r') as original_source:
-            reader = csv.reader(original_source)
-            for row in reader:
-                lines.append(row)
-        
-        #now overwrite the source file with every line except the one we are removing
+        #we already have the lines we need, but their numbering is bad, so let's fix it first
+        for idx in range(len(source_items)):
+            #ignore whitespace, although this should no longer be an issue
+            if len(source_items[idx]) == 0:
+                continue
+            else:
+                #renumber the items
+                source_items[idx][0] = str(idx+1)
+
+        #now overwrite the source file with our new items
         with open(source_file,'w',newline='') as new_source:
             writer = csv.writer(new_source)
-            for item in lines:
-                #ignore whitespace, although this should no longer be an issue
-                if len(item) == 0:
-                    continue
-                elif item[0] != index_to_move:
-                    writer.writerow(item)
+            
+            for item in source_items:
+                writer.writerow(item)
 
-        #finally, let the user know it's done
-        print(f"removed {item_to_move} from {source_file}!")
+
+        #finally, if we've reached this point the operation should be successful. So we return a positive result.
         return True
         
 
