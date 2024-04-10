@@ -25,8 +25,7 @@ class TaskManager:
         else:
             #creates the file and initializes it!
             with open(self.important_path,'a') as file:
-                writer = csv.writer(file)
-                writer.writerow(['index','item'])
+                file.close()
 
             print(f"created important items file at {self.important_path}")
 
@@ -36,8 +35,7 @@ class TaskManager:
         else:
             #creates the file and initializes it!
             with open(self.general_path,'a') as file:
-                writer = csv.writer(file)
-                writer.writerow(['index','item'])
+                file.close()
 
             print(f"created genreal items file at {self.general_path}")
         
@@ -47,8 +45,7 @@ class TaskManager:
         else:
             #creates the file and initializes it!
             with open(self.completed_path,'a') as file:
-                writer = csv.writer(file)
-                writer.writerow(['index','item'])
+                file.close()
 
             print(f"created completed items file at {self.completed_path}")
        
@@ -57,8 +54,11 @@ class TaskManager:
         self.completed_tasks_to_show = 3
         #let the user know we have finished setting up and are ready to go
         print("initialized successfully! \n")
-        self.overview()
-        self.get_action()
+
+        #we will print the overview and get actions whenever we are not currently in an action.
+        while True:
+            self.overview()
+            self.get_action()
 
     
     def overview(self):
@@ -70,7 +70,7 @@ class TaskManager:
             important_items = list(csv.reader(file))
             
             #we print out each item in the list, excluding the headers (hence we start at 1)
-            for i in range(1,len(important_items)):
+            for i in range(len(important_items)):
                 print(" ".join(important_items[i]))
         
         #then the general tasks
@@ -79,7 +79,7 @@ class TaskManager:
             general_items = list(csv.reader(file))
             
             #we print out each item in the list, excluding the headers (hence we start at 1)
-            for i in range(1,len(general_items)):
+            for i in range(len(general_items)):
                 print(" ".join(general_items[i]))
 
         #then the completed tasks (only as many as we intend to show)
@@ -90,7 +90,7 @@ class TaskManager:
             #we figure out how many items to show, the smallest of either the total number or the max number of items to show
             items_to_show = min(self.completed_tasks_to_show, len(completed_items))
             #we print out each item in the list, excluding the headers (hence we start at 1)
-            for i in range(1,items_to_show):
+            for i in range(items_to_show):
                 print(" ".join(completed_items[i]))
 
     def get_action(self):
@@ -108,6 +108,7 @@ class TaskManager:
             print('invalid action! try again...')
             return self.get_action()
         
+        #once we have a valid action, let's call the method the user wants.
         if action == 'a':
             return self.add_task()
         if action == 'c':
@@ -121,12 +122,62 @@ class TaskManager:
         if action == 'n':
             return self.change_number_of_tasks_to_show()
 
+
+
     def add_task(self):
-        #this will be used for adding tasks to the list
-        pass
+        task_name = input("What is the name of the task you would like to create?\n")
+
+        #if the task name is blank. keep asking for a valid one.
+        while task_name == '':
+            print("invalid name. just enter something, anything")
+            return self.add_task()
+        
+        #if we have some task name, we ask for a priority:
+        task_priority = input('''
+        What is the priority of this task?
+        i - important
+        g - general\n
+        ''')
+
+        #screen for a valid input
+        while task_priority not in ['i','g']:
+            print("Invalid priority level. Let's start over.")
+            return self.add_task()
+        
+        #now we will map this priority to the correct file
+        if task_priority == 'i':
+            file_to_open = self.important_path
+        if task_priority == 'g':
+            file_to_open = self.general_path
+
+        #we still need to find the index of item in the file we will be adding to.
+        with open(file_to_open,'r') as file:
+            items = list(csv.reader(file))
+            #in the case that this is the first item
+            if items == []:
+                index_to_add = 1
+            else: #in the case that there are already items, we need to find the max index
+                max_index = 0
+                #only include actual items in this search
+                for item in items:
+                    if len(item) == 0:
+                        continue
+                    if int(item[0]) > max_index:
+                        max_index = int(item[0])
+                #whatever the max index is, the index for the added item will be 1 more.
+                index_to_add = max_index + 1
+        
+        #now we have found the index, we will add the items to the file
+        with open(file_to_open,'a') as file:
+            writer = csv.writer(file)
+            writer.writerow([str(index_to_add), task_name])
+            print(f"added {task_name} to {file_to_open}!")
+            
+        
 
     def complete_task(self):
         #this will be used for completing tasks
+            #ask the user for 
         pass
 
     def uncomplete_task(self):
