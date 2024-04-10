@@ -1,11 +1,10 @@
 #this is to house the task manager class.
-import os
-import csv
+import os #we need this for filepaths
+import csv #we need this to interact with our files
 
 
 class TaskManager:
     
-
     def __init__(self, important_path, general_path, completed_path):
         print("initializing...")
         #ensure we are in the correct directory so it doesn't matter where we run the file from!
@@ -70,7 +69,7 @@ class TaskManager:
         with open(self.important_path,'r') as file:
             important_items = list(csv.reader(file))
             
-            #we print out each item in the list, excluding the headers (hence we start at 1)
+            #we print out each item in the list
             for i in range(len(important_items)):
                 print(" ".join(important_items[i]))
         
@@ -79,7 +78,7 @@ class TaskManager:
         with open(self.general_path,'r') as file:
             general_items = list(csv.reader(file))
             
-            #we print out each item in the list, excluding the headers (hence we start at 1)
+            #we print out each item in the list
             for i in range(len(general_items)):
                 print(" ".join(general_items[i]))
 
@@ -90,7 +89,7 @@ class TaskManager:
             completed_items = list(csv.reader(file))
             #we figure out how many items to show, the smallest of either the total number or the max number of items to show
             items_to_show = min(self.completed_tasks_to_show, len(completed_items))
-            #we print out each item in the list, excluding the headers (hence we start at 1)
+            #we print out each item in the list
             for i in range(items_to_show):
                 print(" ".join(completed_items[i]))
 
@@ -112,15 +111,15 @@ class TaskManager:
         #once we have a valid action, let's call the method the user wants.
         if action == 'a':
             return self.add_task()
-        if action == 'c':
+        elif action == 'c':
             return self.complete_task()
-        if action == 'p':
+        elif action == 'p':
             return self.change_priority()
-        if action == 'u':
+        elif action == 'u':
             return self.uncomplete_task()
-        if action == 'x':
+        elif action == 'x':
             return self.clear_backlog()
-        if action == 'n':
+        elif action == 'n':
             return self.change_number_of_tasks_to_show()
 
 
@@ -242,21 +241,92 @@ class TaskManager:
 
 
         #finally, if we've reached this point the operation should be successful. So we return a positive result.
+        print(f"moved {item_to_move[1]} successfully!")
         return True
         
 
     def complete_task(self):
-        #this will be used for completing tasks
-            #ask the user for the priority of the task they want to complete (this will be source_file)
-            #ask the user for the index of the task within the approrpiate list (index_to_move)
-            #set dest_file to self.completed_path
-            #use these arguments with self.move_task()
-            #while self.move_task() returns False, we will call self.complete_task() recursively
-        pass 
+        #by default, our destination file here is our completed file
+        dest_file = self.completed_path
+        #ask the user for the priority of the task they want to complete (this will be source_file)
+        source = input('''
+        which priority level are you completing the task from?
+        i - important
+        g - general
+        ''')
+
+        #check the validity of the input
+        while source not in ['i','g']:
+            print("invalid response, please enter i or g")
+            return self.complete_task()
+            
+        #once we have a valid input, assign the appropriate file to give our mover
+        if source == 'i':
+            source_file = self.important_path
+        elif source == 'g':
+            source_file = self.general_path
+
+        #ask the user for the index of the task within the approrpiate list (index_to_move)
+        index = input("Enter the index of the task you want to complete:\n")
+
+        #check for valid integer index, the rest will be handled by the mover method
+        try:
+            index = int(index)
+        except ValueError:
+            print("please enter a valid integer index!")
+            return self.complete_task()
+
+        #use these arguments with self.move_task()
+        moved = self.move_task(index, source_file, dest_file)
+        #while self.move_task() returns False, we will call self.complete_task() recursively
+        while not moved:
+            return self.complete_task()
+        #if it doesn't return false then it returned true, and our job is done
+        return
         
     def uncomplete_task(self):
-        #similar method to self.complete_task(), this time we will move back to a list based on input from the user.
-        pass
+        #by definition, the source is the completed file
+        source_file = self.completed_path
+        #give the user the full list of completed tasks, since the one in overview is small
+        print("Here is your full list of completed tasks:")
+        with open(self.completed_path,'r') as file:
+            completed_items = list(csv.reader(file))
+            #we print out each item in the list
+            for i in range(len(completed_items)):
+                print(" ".join(completed_items[i]))
+
+        #now we check which task the user wants to uncomplete
+        index = input("Enter the index of the task you want to uncomplete:\n")
+        #check for valid integer index, the rest will be handled by the mover method
+        try:
+            index = int(index)
+        except ValueError:
+            print("please enter a valid integer index!")
+            return self.uncomplete_task()
+        
+        #now check where this item is meant to go
+        dest = input('''
+                Which list do you want to move this item back to?
+                i - important
+                g - general
+                ''')
+        #check the validity of the input
+        while dest not in ['i','g']:
+            print("invalid response, please enter i or g")
+            return self.uncomplete_task()
+        
+        #assign a destination file accordingly
+        if dest == 'i':
+            dest_file = self.important_path
+        elif dest == 'g':
+            dest_file = self.general_path
+        
+        #move the task!
+        moved = self.move_task(index, source_file, dest_file)
+        while not moved:
+            return self.uncomplete_task()
+        return
+        
 
     def change_priority(self):
         #this will have a similar approach as self.complete_task() but this time we move it to the other priority list
