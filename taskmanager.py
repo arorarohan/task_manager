@@ -83,7 +83,10 @@ class TaskManager:
                 print(" ".join(general_items[i]))
 
         #then the completed tasks (only as many as we intend to show)
-        print(f"\nYour completed tasks (first {self.completed_tasks_to_show}):")
+        if self.completed_tasks_to_show == 10000:
+            print("\nYour completed tasks:")
+        else:
+            print(f"\nYour completed tasks (first {self.completed_tasks_to_show}):")
 
         with open(self.completed_path,'r') as file:
             completed_items = list(csv.reader(file))
@@ -329,15 +332,85 @@ class TaskManager:
         
 
     def change_priority(self):
-        #this will have a similar approach as self.complete_task() but this time we move it to the other priority list
-        pass
+        #ask the user for the priority of the task they want to move (this will be source_file)
+        source = input('''
+        which priority level is the task currently in?
+        i - important
+        g - general
+        ''')
+
+        #check the validity of the input
+        while source not in ['i','g']:
+            print("invalid response, please enter i or g")
+            return self.change_priority()
+            
+        #once we have a valid input, assign the appropriate files to give our mover
+        if source == 'i':
+            source_file, dest_file = self.important_path, self.general_path
+        elif source == 'g':
+            source_file, dest_file = self.general_path, self.important_path
+
+        #ask the user for the index of the task within the approrpiate list (index_to_move)
+        index = input("Enter the index of the task you want to move:\n")
+
+        #check for valid integer index, the rest will be handled by the mover method
+        try:
+            index = int(index)
+        except ValueError:
+            print("please enter a valid integer index!")
+            return self.change_priority()
+        
+        #the priority level to move to has to be the other list. So we just ask the user for confirmation.
+        confirm = input(f"you are moving the item at index {index} in {source_file} to {dest_file}.\nPress y to confirm, or any other button to cancel.\n")
+        #return from the method safely if the user does not enter y.
+        if confirm != 'y':
+            print("Operation cancelled.")
+            return
+
+        #if the user confirms, we move on and use the collected arguments with self.move_task()
+        moved = self.move_task(index, source_file, dest_file)
+        #while self.move_task() returns False, we will call our method again recursively to allow the user to change their input based on the error message given by move_task()
+        while not moved:
+            return self.change_priority()
+        #if it doesn't return false then it returned true, and our job is done
+        return
 
     def clear_backlog(self):
-        #literally all we have to do here is ask for confirmation, then either:
-            #access the completed file in write mode and write nothing (more elegant, idk if this works)
-            #delete the completed file entirely and make a new one (will definitely work)
-        pass
+        #first we ask for confirmation.
+        confirm = input("This will irreversibly delete all completed tasks! Are you sure? (y/n)\n")
+        if confirm != 'y':
+            print("Operation cancelled.")
+            return
+    
+        #now with confirmation, we simply open the file in write mode and close it, thus making it empty.
+        with open(self.completed_path,'w') as file:
+            file.close()
+        print("backlog cleared!")
+        return
+        
 
     def change_number_of_tasks_to_show(self):
         #ask for a new number, if n>0 we update self.completed_tasks_to_show to be the new number.
-        pass
+        n = input("Enter the maximum number of completed tasks you want to show. Enter 0 to show all of them.\n")
+
+        #now check for a valid input.
+        try:
+            n = int(n)
+        except ValueError:
+            print("please enter a valid integer!")
+            return self.change_number_of_tasks_to_show()
+        
+        if n < 0:
+            print("How am I supposed to show you a negative number of tasks? Try with a number >= 0")
+            return self.change_number_of_tasks_to_show()
+        
+        #if our input is 0, change the number of tasks to show to be an arbitrarily large number that nobody will reach unless they just have too much going on in thier life, in which case we can't really help them anyway and they ought to be using a better app for this.
+        if n == 0:
+            self.completed_tasks_to_show = 10000
+            print("Got it, all completed tasks will be shown.")
+            return
+
+        #if our input is greater than 0, change the number accordingly.
+        self.completed_tasks_to_show = n
+        print(f"Got it, will show a maximum of {n} tasks from now on.")
+        return
